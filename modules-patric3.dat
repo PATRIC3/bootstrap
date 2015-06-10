@@ -35,3 +35,7 @@ kb_node_runtime	./build.node
 kb_bamtools	./bootstrap.sh
 kb_bamutil 	./bootstrap.sh
 kb_circos	./build.circos
+kb_bowtie	./install-bowtie1.sh
+kb_bowtie	./install-bowtie2.sh
+kb_rockhopper	./install_rockhopper.sh
+kb_prok_tuxedo	./install_prok_tuxedo.sh

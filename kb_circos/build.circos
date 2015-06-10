@@ -1,5 +1,11 @@
 #!/usr/bin/env perl
 
+#
+# Overrides for housekeeping.conf values.
+#
+
+%overrides = ("housekeeping.conf" => [ max_ideograms => 1000 ]);
+
 use strict;
 
 use Carp;
@@ -65,6 +71,11 @@ for my $bin (<$circos_dir/bin/*>)
 	close($bfh);
     }
 }
+
+# for my $etc_file (keys %overrides)
+# {
+#     my $values = $overrides->{$etc_file}
+# }
 
 run("rsync", "-arv", $circos_dir, "$dest/.");
 
