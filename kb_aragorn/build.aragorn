@@ -1,0 +1,30 @@
+#!/bin/bash
+
+check_errs()
+{
+  # Function. Parameter 1 is the return code
+  # Para. 2 is text to display on failure.
+  if [ "${1}" -ne "0" ]; then
+    echo "ERROR # ${1} : ${2}"
+    # as a bonus, make our script exit with the right error code.
+    exit ${1}
+  fi
+}
+
+target=${TARGET-/kb/runtime}
+
+if [ $# -gt 0 ] ; then
+	target=$1
+	shift
+fi
+
+rm -rf aragorn
+git clone https://github.com/TheSEED/aragorn.git 
+check_errs $? "git checkout failed"
+
+cd aragorn
+gcc -O3 -ffast-math -finline-functions -o aragorn aragorn1.2.36.c
+check_errs $? "compile failed"
+
+cp aragorn $target/bin/aragorn
+check_errs $? "copy to destination $target/bin/aragorn failed"
