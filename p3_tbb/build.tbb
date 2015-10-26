@@ -47,8 +47,8 @@ $build_prefix or die "Could not find build prefix\n";
 
 run("make", @parallel);
 
-run("cp", "-v", <build/${build_prefix}_release/*.so>, "$build_tools/lib/");
-run("cp", "-v", <build/${build_prefix}_debug/*.so>, "$build_tools/lib/");
+run("cp", "-v", <build/${build_prefix}_release/lib*.so*>, "$build_tools/lib/");
+run("cp", "-v", <build/${build_prefix}_debug/lib*.so*>, "$build_tools/lib/");
 run("rsync", "-arv", "include/serial", "include/tbb", "$build_tools/include/");
 
 sub run

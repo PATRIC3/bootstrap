@@ -8,7 +8,7 @@ use Cwd 'abs_path';
 
 my @parallel = ("-j", 8);
 
-my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/build-tools";
+my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/runtime/gcc-4.9.3";
 
 my $dest = $ENV{TARGET} || "/kb/runtime";
 
@@ -40,7 +40,7 @@ run("git", "clone", 'https://github.com/TheSEED/close_kmers.git', $kmer_dir);
 
 chdir($kmer_dir);
 
-run("make", @parallel, "CXX=$build_tools/bin/g++", "BOOST=$build_tools", "OPT=-O3", "kser", "kmerge");
+run("make", @parallel, "BUILD_TOOLS=$build_tools", "OPT=-O3", "kser", "kmerge");
 run("cp", "kser", "$dest/bin/kser");
 run("cp", "kmerge", "$dest/bin/kmerge");
 
