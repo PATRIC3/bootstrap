@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+
+use strict;
+
+use Carp;
+use File::Basename;
+use Cwd 'abs_path';
+
+my @parallel = ("-j", 8);
+
+my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/runtime/gcc-4.9.3";
+
+my $dest = $ENV{TARGET} || "/kb/runtime";
+
+if (@ARGV)
+{
+    $dest = shift;
+    print STDERR "Overriding destination to $dest\n";
+}
+
+$ENV{PATH} = "$dest/bin:$ENV{PATH}";
+$ENV{PATH} = "$build_tools/bin:$ENV{PATH}";
+
+-d $dest || mkdir $dest;
+
+my $vers = "3.2.5";
+my $dir = "eigen-3.2.5";
+my $tarfile = "$vers.tar.gz";
+my $url = "http://bitbucket.org/eigen/eigen/get/$tarfile";
+
+run("curl", "-L", "-o", $tarfile, $url);
+system("rm", "-rf", $dir);
+run("mkdir", $dir);
+run("tar", "-C", $dir, "--strip-components", 1, "-x", "-z", "-p", "-f", $tarfile);
+
+run("cp", "-r", "$dir/Eigen", "$dest/include/.");
+
+sub run
+{
+    my(@cmd) = @_;
+    print "@cmd\n";
+    my $rc = system(@cmd);
+    $rc == 0 or die "Cmd failed with rc=$rc: @cmd\n";
+}

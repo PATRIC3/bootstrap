@@ -1,0 +1,60 @@
+#!/usr/bin/env perl
+
+use strict;
+
+use Carp;
+use File::Basename;
+use Cwd 'abs_path';
+
+my @parallel = ("-j", 8);
+
+my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/build-tools";
+
+my $dest = $ENV{TARGET} || "/kb/runtime";
+
+if (@ARGV)
+{
+    $dest = shift;
+    print STDERR "Overriding destination to $dest\n";
+}
+
+$ENV{PATH} = "$dest/bin:$ENV{PATH}";
+$ENV{PATH} = "$build_tools/bin:$ENV{PATH}";
+
+-d $dest || mkdir $dest;
+
+my $vers = "tbb44_20150728oss";
+my $tarfile = "${vers}_src.tgz";
+my $url = "https://www.threadingbuildingblocks.org/sites/default/files/software_releases/source/$tarfile";
+
+system("rm", "-rf", $tarfile, $vers);
+run("curl", "-o", $tarfile, $url);
+run("tar", "xzfp", $tarfile);
+chdir($vers) or die "Cannot chdir $vers: $!";
+
+my $build_prefix;
+open(P, "-|", "make", "info") or die "Cannot open make pipe: $!";
+while (<P>)
+{
+    print;
+    if (/tbb_build_prefix=(.*)/)
+    {
+	$build_prefix = $1;
+    }
+}
+close(P) or die "Error running make pipe: $!";
+$build_prefix or die "Could not find build prefix\n";
+
+run("make", @parallel);
+
+run("cp", "-v", <build/${build_prefix}_release/lib*.so*>, "$build_tools/lib/");
+run("cp", "-v", <build/${build_prefix}_debug/lib*.so*>, "$build_tools/lib/");
+run("rsync", "-arv", "include/serial", "include/tbb", "$build_tools/include/");
+
+sub run
+{
+    my(@cmd) = @_;
+    print "@cmd\n";
+    my $rc = system(@cmd);
+    $rc == 0 or die "Cmd failed with rc=$rc: @cmd\n";
+}

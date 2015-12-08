@@ -1,0 +1,51 @@
+#!/usr/bin/env perl
+
+use strict;
+
+use Carp;
+use File::Basename;
+use Cwd 'abs_path';
+
+my $dest = $ENV{TARGET} || "/kb/runtime";
+
+if (@ARGV)
+{
+    $dest = shift;
+    print STDERR "Overriding destination to $dest\n";
+}
+
+-d $dest || mkdir $dest;
+
+my $tar = "mafft-7.130-with-extensions-src.tgz";
+my $url = "http://mafft.cbrc.jp/alignment/software/$tar";
+my $dir = "mafft-7.130-with-extensions";
+
+if (! -s $tar)
+{
+    run("curl", "-o", $tar, "-L", $url);
+}
+
+
+run("rm -rf $dir");
+run("tar xzfp $tar");
+chdir $dir or die "cannot chdir $dir: $!";
+
+chdir "core" or die "cannot chdir core: $!";
+run("make clean");
+run("make PREFIX=$dest");
+run("make install PREFIX=$dest");
+chdir "../extensions" or die "cannot chdir ../extensions: $!";
+run("make clean");
+run("make PREFIX=$dest");
+run("make install PREFIX=$dest");
+
+sub run
+{
+    my(@cmd) = @_;
+    print "Run @cmd\n";
+    my $rc = system(@cmd);
+    if ($rc != 0)
+    {
+	die "Command failed with rc=$rc: $!\n";
+    }
+}

@@ -19,7 +19,7 @@ if (@ARGV)
 
 -d $dest || mkdir $dest;
 
-my $python_url = "http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz";
+my $python_url = "http://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz";
 
 my $python_tgz = basename($python_url);
 my $python_vers = basename($python_tgz, ".tgz");

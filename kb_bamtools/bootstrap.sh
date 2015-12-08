@@ -9,7 +9,7 @@ if [[ $# -ne 0 ]] ; then
         shift
 fi
 
-
+if [ -f /usr/bin/apt-get ] ; then
 apt-get update
 apt-get install -y build-essential
 apt-get install -y git
@@ -18,7 +18,7 @@ apt-get install -y libncurses5-dev
 apt-get install -y libncurses5
 apt-get install -y dh-autoreconf
 apt-get install -y pkg-config
-
+fi
 
 git clone git://github.com/pezmaster31/bamtools.git
 pushd bamtools

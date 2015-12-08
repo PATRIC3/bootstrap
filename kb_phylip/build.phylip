@@ -16,8 +16,8 @@ if (@ARGV)
 
 -d $dest || mkdir $dest;
 
-my $phylip_dir = "phylip-3.695";
-my $phylip_tar = "phylip-3.695.tar.gz";
+my $phylip_dir = "phylip-3.696";
+my $phylip_tar = "phylip-3.696.tar.gz";
 my $phylip_url = "http://evolution.gs.washington.edu/phylip/download/$phylip_tar";
 
 if (! -s $phylip_tar)
@@ -41,3 +41,11 @@ print F <<END;
 export PATH=\"$dest/$phylip_dir/exe:\$PATH\"
 END
 
+chdir("$dest/bin");
+for my $file (<../$phylip_dir/exe/*>)
+{
+    if (`file $file` =~ /executable/)
+    {
+	symlink($file, basename($file));
+    }
+}

@@ -1,0 +1,53 @@
+#!/usr/bin/env perl
+
+use strict;
+
+use Carp;
+use File::Basename;
+use Cwd 'abs_path';
+
+my @parallel = ("-j", 8);
+
+my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/runtime/gcc-4.9.3";
+
+my $dest = $ENV{TARGET} || "/kb/runtime";
+
+if (@ARGV)
+{
+    $dest = shift;
+    print STDERR "Overriding destination to $dest\n";
+}
+
+$ENV{PATH} = "$dest/bin:$ENV{PATH}";
+$ENV{PATH} = "$build_tools/bin:$ENV{PATH}";
+
+-d $dest || mkdir $dest;
+
+my $kmc_dir = "KMC";
+system("rm", "-rf", $kmc_dir);
+run("git", "clone", 'https://github.com/marekkokot/KMC', $kmc_dir);
+chdir($kmc_dir);
+run("make", @parallel);
+run("cp", "bin/kmc", "$dest/bin/kmc");
+run("cp", "bin/kmc_dump", "$dest/bin/kmc_dump");
+run("cp", "bin/kmc_tools", "$dest/bin/kmc_tools");
+
+chdir("..");
+
+my $kmer_dir = "close_kmers";
+system("rm", "-rf", $kmer_dir);
+run("git", "clone", 'https://github.com/TheSEED/close_kmers.git', $kmer_dir);
+
+chdir($kmer_dir);
+
+run("make", @parallel, "BUILD_TOOLS=$build_tools", "OPT=-O3", "kser", "kmerge");
+run("cp", "kser", "$dest/bin/kser");
+run("cp", "kmerge", "$dest/bin/kmerge");
+
+sub run
+{
+    my(@cmd) = @_;
+    print "@cmd\n";
+    my $rc = system(@cmd);
+    $rc == 0 or die "Cmd failed with rc=$rc: @cmd\n";
+}

@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+
+use strict;
+
+use Carp;
+use File::Basename;
+use Cwd 'abs_path';
+
+my @parallel = ("-j", 8);
+
+my $dest = $ENV{TARGET} || "/kb/runtime";
+my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/runtime/gcc-4.9.3";
+
+if (@ARGV)
+{
+    $dest = shift;
+    print STDERR "Overriding destination to $dest\n";
+}
+
+$ENV{PATH} = "$build_tools/bin:$ENV{PATH}";
+$ENV{PATH} = "$dest/bin:$ENV{PATH}";
+$ENV{CFLAGS} = "-I$dest/include";
+$ENV{LDFLAGS} = "-Wl,-rpath,$build_tools/lib64 -Wl,-rpath,$build_tools/lib";
+
+-d $dest || mkdir $dest;
+
+
+my $hash = "753c109e31818dcf7aa8a2c8ecdac4fa43d2ab9b";
+
+my $cuff_dir = "cufflinks";
+system("rm", "-rf", $cuff_dir);
+run("git", "clone", 'https://github.com/cole-trapnell-lab/cufflinks.git');
+
+chdir($cuff_dir) || die "cannot chdir $cuff_dir: $!";
+run("git", "checkout", $hash);
+run("./autogen.sh");
+run("./configure", "--with-bam=$dest/samtools", "--prefix=$dest", 
+	#"--with-boost-thread=$build_tools/lib/libboost_thread-mt.so", 
+	"--with-boost=$build_tools", "--with-boost-libdir=$build_tools/lib");
+run("make", @parallel);
+run("make", "install");
+
+sub run
+{
+    my(@cmd) = @_;
+    print "@cmd\n";
+    my $rc = system(@cmd);
+    $rc == 0 or die "Cmd failed with rc=$rc: @cmd\n";
+}

@@ -1,0 +1,92 @@
+#!/usr/bin/env perl
+
+#
+# Overrides for housekeeping.conf values.
+#
+
+%overrides = ("housekeeping.conf" => [ max_ideograms => 1000 ]);
+
+use strict;
+
+use Carp;
+use File::Basename;
+use Cwd 'abs_path';
+
+my $dest = $ENV{TARGET} || "/kb/runtime";
+my $parallel = 4;
+
+if (@ARGV)
+{
+    $dest = shift;
+    print STDERR "Overriding destination to $dest\n";
+}
+
+-d $dest || mkdir $dest;
+
+my $vers = "0.67-7";
+
+my $circos_dir = "circos-$vers";
+my $circos_tar = "circos-$vers.tgz";
+my $circos_url = "http://circos.ca/distribution/$circos_tar";
+
+if (! -s $circos_tar)
+{
+    system("curl", "-o", $circos_tar, "-L", $circos_url);
+}
+
+run("rm", "-rf", $circos_dir);
+run("tar", "xzfp", $circos_tar);
+
+#
+# Fix up the scripts to use the correct perl path
+#
+
+for my $bin (<$circos_dir/bin/*>)
+{
+    my $base = basename($bin);
+    open(my $bfh, "<", $bin) or die "Cannot open $bin: $!";
+    my $l = <$bfh>;
+    if ($l =~ m,/bin/env perl,)
+    {
+	# Need to replace.
+	my $new = "$circos_dir/bin/$base.new";
+	open(my $nfh, ">", $new) or die "Cannot open $new: $!";
+	print $nfh "#!$dest/bin/perl\n";
+	my $buf;
+	while (read($bfh, $buf, 4096))
+	{
+	    print $nfh $buf;
+	}
+
+	my @stat = stat($bin);
+	@stat or die "Stat $bin failed: $!";
+
+	close($nfh);
+	close($bfh);
+	chmod($stat[2], $new);
+	rename($new, $bin) or die "Error renaming $new to $bin: $!\n";
+    }
+    else
+    {
+	close($bfh);
+    }
+}
+
+# for my $etc_file (keys %overrides)
+# {
+#     my $values = $overrides->{$etc_file}
+# }
+
+run("rsync", "-arv", $circos_dir, "$dest/.");
+
+unlink("$dest/bin/circos");
+symlink("../$circos_dir/bin/circos", "$dest/bin/circos");
+
+sub run
+{
+    my $rc = system(@_);
+    if ($rc != 0 )
+    {
+	die "Error $rc running @_\n";
+    }
+}

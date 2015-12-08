@@ -60,3 +60,8 @@ python-dateutil
 requests>=1.0
 pysam
 qcli
+cherrypy
+ipython
+pycolor
+requests_toolbelt
+pandas

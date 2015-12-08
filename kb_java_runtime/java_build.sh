@@ -56,12 +56,13 @@ else
 	  #cleanup old
 	  rm -rf $target/jdk1.6*
 	  rm -rf $target/jdk1.7*
+	  rm -rf $target/jdk1.8*
 	  rm $target/java
 	  find /$target/bin -xtype l -delete
 	  #install new 
-	  tar zxvf jdk-7u45-linux-x64.tar.gz -C $target
-	  ln -s $target/jdk1.7.0_45 $target/java
-	  ln -s $target/jdk1.7.0_45/bin/* $target/bin/
+	  tar zxvf jdk-8u40-linux-x64.tar.gz -C $target
+	  ln -s $target/jdk1.8.0_40 $target/java
+	  ln -s $target/jdk1.8.0_40/bin/* $target/bin/
 	else
 	  echo "This component is restricted, please download the tarball from the rights holder."
 	fi
@@ -93,7 +94,7 @@ fi
 ln -s $target/apache-ivy-2.3.0/ivy-2.3.0.jar $target/ant/lib/.
 
 echo "Install tomcat"
-v=7.0.57
+v=7.0.59
 curl -O "ftp://apache.cs.utah.edu/apache.org/tomcat/tomcat-7/v$v/bin/apache-tomcat-$v.tar.gz"
 rm -rf $target/tomcat*
 tar zxvf apache-tomcat-$v.tar.gz -C $target
