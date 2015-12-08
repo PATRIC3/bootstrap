@@ -30,6 +30,8 @@ $ENV{TARGET} = $dest;
 
 open(DAT, "<", $module_dat) or die "Cannot open $module_dat: $!";
 
+$| = 1;
+
 my @modules;
 
 my %modules;

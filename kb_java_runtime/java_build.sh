@@ -60,9 +60,9 @@ else
 	  rm $target/java
 	  find /$target/bin -xtype l -delete
 	  #install new 
-	  tar zxvf jdk-8u40-linux-x64.tar.gz -C $target
-	  ln -s $target/jdk1.8.0_40 $target/java
-	  ln -s $target/jdk1.8.0_40/bin/* $target/bin/
+	  tar zxvf jdk-8u66-linux-x64.tar.gz -C $target
+	  ln -s $target/jdk1.8.0_66 $target/java
+	  ln -s $target/jdk1.8.0_66/bin/* $target/bin/
 	else
 	  echo "This component is restricted, please download the tarball from the rights holder."
 	fi
@@ -70,7 +70,7 @@ else
 fi
 
 echo "Install Ant"
-v=1.9.4
+v=1.9.6
 curl -O http://apache.cs.utah.edu//ant/binaries/apache-ant-$v-bin.tar.gz
 
 rm -rf $target/apache-ant*
@@ -84,17 +84,17 @@ ln -s $target/apache-ant-$v $target/ant
 ln -s $target/ant/bin/ant $target/bin/ant
 
 echo "Install Ivy"
-curl -O http://apache.cs.utah.edu//ant/ivy/2.3.0/apache-ivy-2.3.0-bin.tar.gz
+curl -O http://apache.cs.utah.edu//ant/ivy/2.4.0/apache-ivy-2.4.0-bin.tar.gz
 rm -rf $target/apache-ivy*
-tar zxvf apache-ivy-2.3.0-bin.tar.gz -C $target
+tar zxvf apache-ivy-2.4.0-bin.tar.gz -C $target
 if [ $? -ne 0 ] ; then
 	echo "Failed to unpack ivy" 1>&2
 	exit 1
 fi
-ln -s $target/apache-ivy-2.3.0/ivy-2.3.0.jar $target/ant/lib/.
+ln -s $target/apache-ivy-2.4.0/ivy-2.4.0.jar $target/ant/lib/.
 
 echo "Install tomcat"
-v=7.0.59
+v=7.0.65
 curl -O "ftp://apache.cs.utah.edu/apache.org/tomcat/tomcat-7/v$v/bin/apache-tomcat-$v.tar.gz"
 rm -rf $target/tomcat*
 tar zxvf apache-tomcat-$v.tar.gz -C $target
@@ -109,7 +109,7 @@ ln -s $target/apache-tomcat-$v $target/tomcat
 #
 
 echo "Install glassfish"
-curl -O http://dlc.sun.com.edgesuite.net/glassfish/3.1.2.2/release/glassfish-3.1.2.2-ml.zip
+curl -O http://download.java.net/glassfish/3.1.2.2/release/glassfish-3.1.2.2-ml.zip
 rm -rf $target/glassfish*
 unzip -d $target/ glassfish-3.1.2.2-ml.zip 
 if [ $? -ne 0 ] ; then
@@ -117,13 +117,13 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-jackson=jackson-all-1.9.11.jar
-
-echo "Install jackson"
-rm -rf $target/lib/jackson-all*
-curl -o $target/lib/$jackson http://jackson.codehaus.org/1.9.11/$jackson
-ln -s $target/lib/$jackson $target/lib/jackson-all.jar
-
+#jackson=jackson-all-1.9.11.jar
+#
+#echo "Install jackson"
+#rm -rf $target/lib/jackson-all*
+#curl -o $target/lib/$jackson http://jackson.codehaus.org/1.9.11/$jackson
+#ln -s $target/lib/$jackson $target/lib/jackson-all.jar
+#
 mkdir -p $target/env
 echo "
 if [ -d /Library/Java/Home ] ; then

@@ -40,7 +40,6 @@ uwsgi
 scipy
 cython
 appdirs
-scikit-learn
 markdown
 xlutils
 gitpython
