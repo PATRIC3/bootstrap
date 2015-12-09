@@ -41,4 +41,4 @@ glpk-devel
 git
 cmake
 wget
-
+uuid-devel
