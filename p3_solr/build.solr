@@ -26,7 +26,7 @@ my $base = "$dest/p3_solr";
 make_path($base);
 
 #install_deps($base);
-install_plugin($base);
+#install_plugin($base);
 install_solr($base);
 
 sub install_deps
@@ -67,6 +67,32 @@ sub install_solr
     my $top = getcwd;
     chdir("p3_solr") or die "cannot chdir p3_solr: $!";
 
+    #
+    # Determine our version
+    #
+    my($version, $suffix);
+    if (open(F, "<", "lucene/version.properties"))
+    {
+	while (<F>)
+	{
+	    if (/version\.suffix\s*=\s*(\S+)/)
+	    {
+		$suffix = $1;
+	    }
+	    elsif (/version\.base\s*=\s*(\S+)/)
+	    {
+		$version = $1;
+	    }
+	}
+	close(F);
+
+    }
+
+    if (!$version || !$suffix)
+    {
+	die "Could not determine version from lucene/version.properties";
+    }
+
     run("ant", "ivy-bootstrap");
     run("ant", "compile");
     
@@ -75,7 +101,17 @@ sub install_solr
     chdir("../solr") or die "cannot chdir ../solr: $!";
     run("ant", "create-package");
     # creates a package/solr-5.3.2-PATRIC.tgz
-    run("tar", "-C", $base, "-z", "-x", "-f", "package/solr-5.3.2-PATRIC.tgz");
+    my $tarfile = "solr-$version-$suffix.tgz";
+    if (! -f "package/$tarfile")
+    {
+	die "Could not find expected tarfile package/$tarfile";
+    }
+    run("tar", "-C", $base, "-z", "-x", "-f", "package/$tarfile");
+    if (! -d "$base/solr-$version-$suffix")
+    {
+	die "Untar did not create $base/solr-$version-$suffix";
+    }
+    symlink("$base/solr-$version-$suffix", "$base/solr") or die "Cannot symlink $base/solr-$version-$suffix to $base/solr: $!";
 }
 
 sub run

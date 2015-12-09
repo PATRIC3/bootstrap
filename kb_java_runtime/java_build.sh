@@ -93,6 +93,16 @@ if [ $? -ne 0 ] ; then
 fi
 ln -s $target/apache-ivy-2.4.0/ivy-2.4.0.jar $target/ant/lib/.
 
+echo "Install Maven"
+curl -O http://apache.mirrorcatalogs.com/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+rm -rf $target/apache-maven*
+tar zxvf apache-maven-3.3.9-bin.tar.gz -C $target
+if [ $? -ne 0 ] ; then
+	echo "Failed to unpack ivy" 1>&2
+	exit 1
+fi
+ln -s $target/apache-maven-3.3.9/bin/mvn $target/bin/mvn
+
 echo "Install tomcat"
 v=7.0.65
 curl -O "ftp://apache.cs.utah.edu/apache.org/tomcat/tomcat-7/v$v/bin/apache-tomcat-$v.tar.gz"
