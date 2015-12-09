@@ -1,0 +1,87 @@
+#!/usr/bin/env perl
+
+use strict;
+
+use Carp;
+use File::Path 'make_path';
+use File::Basename;
+use Cwd qw(abs_path getcwd);
+
+my @parallel = ("-j", 8);
+
+my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/runtime/gcc-4.9.3";
+
+@ARGV == 1 or die "Usage: $0 destination-dir\n";
+
+my $dest = shift;
+
+$ENV{PATH} = "$build_tools/bin:$ENV{PATH}";
+$ENV{PATH} = "$dest/bin:$ENV{PATH}";
+$ENV{CFLAGS} = "-I$dest/include";
+$ENV{LDFLAGS} = "-Wl,-rpath,$build_tools/lib64 -Wl,-rpath,$build_tools/lib";
+
+-d $dest || mkdir $dest;
+
+my $base = "$dest/p3_solr";
+make_path($base);
+
+#install_deps($base);
+install_plugin($base);
+install_solr($base);
+
+sub install_deps
+{
+    my($base) = @_;
+
+    my $vers = "3.5";
+    my $tar = "commons-math3-$vers-bin.tar.gz";
+    my $commons_math = "http://mirrors.gigenet.com/apache//commons/math/binaries/$tar";
+
+    run("curl", "-o", $tar, $commons_math);
+    run("tar", "xzfp", $tar);
+    run("cp", "commons-math3-$vers/commons-math3-$vers.jar", "$dest/lib/.");
+}
+
+sub install_plugin
+{
+    my($base) = @_;
+    my $repo = "https://github.com/PATRIC3/p3_solr.git";
+    my $branch = "lucene_solr_5_3";
+    my $top = getcwd;
+
+    run("git", "clone", $repo);
+    chdir("p3_solr") || die "cannot chdir p3_solr: $!";
+    run("git", "checkout", "origin/$branch");
+    chdir("patric-solr-plugins") || die "cannot chdir patric-solr-plugins: $!";
+    run("mvn", "package");
+    run("cp", "build/patric-solr-plugins.jar", "../solr/patric/.");
+    run("cp $dest/lib/commons-math3*jar ../solr/patric/.");
+
+    chdir ($top);
+}
+
+sub install_solr
+{
+    my($base) = @_;
+
+    my $top = getcwd;
+    chdir("p3_solr") or die "cannot chdir p3_solr: $!";
+
+    run("ant", "ivy-bootstrap");
+    run("ant", "compile");
+    
+    chdir("lucene") or die "cannot chdir lucene: $!";
+    run("ant", "package");
+    chdir("../solr") or die "cannot chdir ../solr: $!";
+    run("ant", "create-package");
+    # creates a package/solr-5.3.2-PATRIC.tgz
+    run("tar", "-C", $base, "-z", "-x", "-f", "package/solr-5.3.2-PATRIC.tgz");
+}
+
+sub run
+{
+    my(@cmd) = @_;
+    print "@cmd\n";
+    my $rc = system(@cmd);
+    $rc == 0 or die "Cmd failed with rc=$rc: @cmd\n";
+}
