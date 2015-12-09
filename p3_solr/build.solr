@@ -25,8 +25,8 @@ $ENV{LDFLAGS} = "-Wl,-rpath,$build_tools/lib64 -Wl,-rpath,$build_tools/lib";
 my $base = "$dest/p3_solr";
 make_path($base);
 
-#install_deps($base);
-#install_plugin($base);
+install_deps($base);
+install_plugin($base);
 install_solr($base);
 
 sub install_deps
