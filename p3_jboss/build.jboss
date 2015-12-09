@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+
+use strict;
+
+use Carp;
+use File::Path 'make_path';
+use File::Basename;
+use Cwd 'abs_path';
+
+my @parallel = ("-j", 8);
+
+my $build_tools = $ENV{BUILD_TOOLS} || "/disks/patric-common/runtime/gcc-4.9.3";
+
+@ARGV == 4 or die "Usage: $0 destination-dir java-tarball jboss-tarball jboss-patric-tarball\n";
+
+my $dest = shift;
+my $java_tarfile = shift;
+my $jboss_tarfile = shift;
+my $jboss_patric_tarfile = shift;
+
+$ENV{PATH} = "$build_tools/bin:$ENV{PATH}";
+$ENV{PATH} = "$dest/bin:$ENV{PATH}";
+$ENV{CFLAGS} = "-I$dest/include";
+$ENV{LDFLAGS} = "-Wl,-rpath,$build_tools/lib64 -Wl,-rpath,$build_tools/lib";
+
+-d $dest || mkdir $dest;
+
+#
+# JBoss requires a captive Java7 installlation
+#
+
+my $base = "$dest/p3_jboss";
+make_path($base);
+#install_captive_java($base, $java_tarfile);
+install_jboss($base, $jboss_tarfile, $jboss_patric_tarfile);
+
+sub install_captive_java
+{
+    my($base, $java_tarfile) = @_;
+
+    my $path = untar_into($java_tarfile, $base);
+    symlink("$base/$path", "$base/java");
+}
+
+sub install_jboss
+{
+    my($base, $jboss_tarfile, $jboss_patric_tarfile) = @_;
+
+    #
+    # Extract and move to toplevel.
+    #
+    my $path = untar_into($jboss_tarfile, $base);
+    run("mv $base/$path/* $base/.");
+
+    my $path = untar_into($jboss_patric_tarfile, "$base/jboss-as/server");
+}
+
+sub untar_into
+{
+    my($tarfile, $base) = @_;
+    open(T, "-|", "tar", "-C", $base, "-x", "-v", "-z", "-f", $tarfile) or 
+    	die "Cannot untar $tarfile: $!";
+    my $path;
+    while (<T>)
+    {
+	if (!$path)
+	{
+	    chomp;
+	    ($path) = $_ =~ m,^([^/]+),;
+	}
+    }
+    close(T) or die "Untar $tarfile failed: $!";
+    return $path;
+}
+
+sub run
+{
+    my(@cmd) = @_;
+    print "@cmd\n";
+    my $rc = system(@cmd);
+    $rc == 0 or die "Cmd failed with rc=$rc: @cmd\n";
+}
