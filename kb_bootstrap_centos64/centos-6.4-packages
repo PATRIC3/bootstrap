@@ -1,3 +1,5 @@
+epel-release
+redis
 man
 gcc-c++
 gcc-gfortran
