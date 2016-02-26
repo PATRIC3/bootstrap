@@ -14,7 +14,7 @@ dst=$target/data
 # general steps:
 # download latest
 # unzip latest
-# wrap jars and deploy as scripts?
+# wrap jars and deploy as scripts
 # configure location of database
 
 
