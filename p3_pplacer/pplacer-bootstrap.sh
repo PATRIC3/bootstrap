@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -o verbose
-set -e
 
 # build script for pplacer 
 
