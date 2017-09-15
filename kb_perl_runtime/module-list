@@ -44,6 +44,7 @@ JSON::Any
 JSON::RPC
 JSON::RPC::Client
 Proc::ParallelLoop
+Parallel::ForkManager
 Data::UUID
 Config::Simple
 Digest::MD5
